@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Argus — Amtrak Price Watcher",
+  "version": "1.0.0",
+  "description": "Argus never blinks. Get instant alerts when Amtrak fares drop.",
+
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "activeTab",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://www.amtrak.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Argus — Amtrak Price Watcher",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.amtrak.com/tickets/departure.html*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

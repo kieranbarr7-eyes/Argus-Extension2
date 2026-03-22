@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Argus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ONBOARDING OVERLAY — first launch only
+════════════════════════════════════════════════════════════ -->
+<div id="onboarding" class="onboarding hidden">
+  <div class="ob-inner">
+    <div class="ob-eye">👁</div>
+    <h1 class="ob-title">Meet Argus</h1>
+    <p class="ob-sub">Your Amtrak fare watcher. Never pays full price.</p>
+    <div class="ob-steps">
+      <div class="ob-step">
+        <span class="ob-num">1</span>
+        <div class="ob-text">
+          <strong>Search your route on Amtrak.com</strong>
+          <span>Argus activates automatically on the results page</span>
+        </div>
+      </div>
+      <div class="ob-step">
+        <span class="ob-num">2</span>
+        <div class="ob-text">
+          <strong>Set your target price</strong>
+          <span>We'll show what's realistic based on observed fares</span>
+        </div>
+      </div>
+      <div class="ob-step">
+        <span class="ob-num">3</span>
+        <div class="ob-text">
+          <strong>Always book the refundable fare</strong>
+          <span>When prices drop, rebook cheaper — that's how you win</span>
+        </div>
+      </div>
+    </div>
+    <button id="ob-got-it" class="btn-primary btn-full">Got it, let's go</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN UI
+════════════════════════════════════════════════════════════ -->
+<div id="main" class="main hidden">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-eye">👁</span>
+      <span class="logo-word">ARGUS</span>
+    </div>
+    <div class="header-right">
+      <span id="status-dot" class="status-dot inactive"></span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════
+       IDLE MODE — user is not on Amtrak results page
+  ══════════════════════════════════════════════════════ -->
+  <div id="idle-mode" class="hidden">
+
+    <!-- When a route is saved -->
+    <div id="idle-watching" class="idle-watching hidden">
+      <div class="idle-watching-label">Watching</div>
+      <div id="idle-route" class="idle-route-display"></div>
+      <div id="idle-threshold-display" class="idle-threshold-display"></div>
+      <div id="idle-last-seen" class="idle-last-seen"></div>
+    </div>
+
+    <!-- When no route saved yet -->
+    <div id="idle-empty" class="idle-empty hidden">
+      <div class="idle-empty-eye">👁</div>
+      <div class="idle-empty-title">Set up your first watch</div>
+      <div class="idle-empty-sub">Navigate to Amtrak.com to get started</div>
+    </div>
+
+    <button id="btn-open-amtrak" class="btn-primary btn-full">Open Amtrak →</button>
+
+    <!-- Last known prices (faded, shown when available) -->
+    <div id="idle-prices-wrap" class="idle-prices-wrap hidden">
+      <div class="idle-prices-label">Last known prices</div>
+      <div id="idle-prices-list" class="idle-prices-list"></div>
+    </div>
+
+    <button id="btn-edit-settings" class="btn-ghost btn-full">Edit watch settings ✎</button>
+
+    <!-- Inline settings panel (hidden until Edit is clicked) -->
+    <div id="idle-settings" class="idle-settings hidden">
+      <div class="isetting-row">
+        <label class="field-label">Alert below</label>
+        <div class="thresh-wrap">
+          <span class="currency">$</span>
+          <input id="idle-thresh-input" class="thresh-input" type="number" min="1" max="9999" placeholder="50" />
+        </div>
+      </div>
+      <div class="isetting-actions">
+        <button id="idle-save-btn" class="btn-primary">Save</button>
+        <button id="idle-cancel-btn" class="btn-ghost">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       ACTIVE MODE — prices are live from current Amtrak tab
+  ══════════════════════════════════════════════════════ -->
+  <div id="active-mode" class="hidden">
+
+    <!-- Zone 1: Settings bar -->
+    <div class="settings-zone">
+      <!-- Collapsed summary row -->
+      <div id="settings-summary" class="settings-summary">
+        <span id="settings-summary-text" class="settings-summary-text">—</span>
+        <button id="btn-settings-expand" class="btn-icon" title="Edit settings">✎</button>
+      </div>
+      <!-- Expanded panel -->
+      <div id="settings-panel" class="settings-panel hidden">
+        <div class="settings-row">
+          <div class="settings-field">
+            <label class="field-label">Alert below</label>
+            <div class="thresh-wrap">
+              <span class="currency">$</span>
+              <input id="threshold-input" class="thresh-input" type="number" min="1" max="9999" placeholder="50" />
+            </div>
+          </div>
+          <div class="settings-field">
+            <label class="field-label">Watching</label>
+            <label class="toggle">
+              <input type="checkbox" id="watch-toggle" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-footer">
+          <span id="observed-range" class="observed-range">Observing prices…</span>
+          <button id="btn-save-settings" class="btn-primary btn-save hidden">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 2: Live prices -->
+    <div class="prices-zone">
+      <div class="prices-header">
+        <span id="prices-route" class="prices-route"></span>
+        <div class="prices-meta">
+          <span id="check-dot" class="check-dot"></span>
+          <span id="last-checked" class="last-checked-text"></span>
+        </div>
+      </div>
+      <!-- Fare filter + sort on one row, always visible -->
+      <div class="filter-bar">
+        <div id="fare-filter" class="fare-filter">
+          <button class="fare-btn active" data-fare="all">All</button>
+          <button class="fare-btn" data-fare="coach">Coach</button>
+          <button class="fare-btn" data-fare="business">Business</button>
+        </div>
+        <div class="sort-bar">
+          <button class="sort-btn active" data-sort="listed">Listed</button>
+          <button class="sort-btn" data-sort="cheapest">Cheapest</button>
+        </div>
+      </div>
+      <div id="prices-list" class="prices-list"></div>
+    </div>
+
+    <!-- Zone 3: Savings (collapsed by default) -->
+    <div class="savings-zone">
+      <button id="savings-toggle" class="savings-toggle">
+        <span id="savings-label" class="savings-label">Total saved: $0</span>
+        <span class="savings-chevron" id="savings-chevron">▾</span>
+      </button>
+      <div id="savings-body" class="savings-body hidden">
+        <div id="savings-journeys"></div>
+        <button id="btn-share" class="btn-ghost btn-share hidden">Share savings 📋</button>
+      </div>
+    </div>
+
+    <footer class="footer-tagline">Argus never blinks.</footer>
+
+  </div><!-- /active-mode -->
+
+</div><!-- /main -->
+
+<script src="popup.js"></script>
+</body>
+</html>
